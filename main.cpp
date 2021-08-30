@@ -4,6 +4,7 @@
 #define SCREEN_WIDTH 1280 
 #define SCREEN_HEIGHT 720
 #define WINDOW_NAME "SDL Template"
+#define FRAME_DELAY 18
 
 int main(int argc, char** argv){
     if(SDL_Init(SDL_INIT_VIDEO) < 0) std::cout << "Error: SDL failed to initialize\nSDL Error: " << SDL_GetError() << "\n";
@@ -13,7 +14,8 @@ int main(int argc, char** argv){
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if(!renderer) std::cout << "Error: Failed to create renderer\nSDL Error: " << SDL_GetError() << "\n";
-
+    
+    int frameStart = 0;
     bool running = true;
     while(running){
         SDL_Event event;
@@ -26,6 +28,10 @@ int main(int argc, char** argv){
         SDL_RenderClear(renderer);
 
         SDL_RenderPresent(renderer);
+        
+        int frameTime = SDL_GetTicks() - frameStart;
+		if (frameTime < FRAME_DELAY) SDL_Delay(FRAME_DELAY - frameTime);
+		frameStart = SDL_GetTicks();
     }
 
     return 0;
