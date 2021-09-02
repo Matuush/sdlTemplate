@@ -25,7 +25,7 @@ struct SDL {
 
 
     SDL() {
-        if(SDL_Init(SDL_INIT_VIDEO) < 0) std::cout << "Error: SDL failed to initialize\nSDL Error: " << SDL_GetError() << "\n";
+        if(SDL_Init(SDL_INIT_EVERYTHING) < 0) std::cout << "Error: SDL failed to initialize\nSDL Error: " << SDL_GetError() << "\n";
 
         SDL_Window *window = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
         if(!window) std::cout << "Error: Failed to open window\nSDL Error: " << SDL_GetError() << "\n";
@@ -33,12 +33,10 @@ struct SDL {
         SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
         if(!renderer) std::cout << "Error: Failed to create renderer\nSDL Error: " << SDL_GetError() << "\n";
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SetDrawColor(255, 255, 255);
 
-
-        std::cout << "prdel";
         TTF_Init();
-        font = TTF_OpenFont("default/defaultFont.ttf", defaultFontSize);
+        SetFont("textures/Sans.ttf", defaultFontSize);
     }
 
     void loop() {
@@ -50,6 +48,7 @@ struct SDL {
             }
 
             SDL_RenderClear(renderer);
+            SetDrawColor(0, 0, 0);
             
             render();
 
@@ -63,7 +62,7 @@ struct SDL {
 
 private:
     inline void render() {
-
+        DrawLine(0, 0, 300, 300);
     }
     inline void input(SDL_Event *event) {
 
