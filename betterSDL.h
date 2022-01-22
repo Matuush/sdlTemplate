@@ -10,31 +10,31 @@
 #define SCREEN_HEIGHT 720
 #define WINDOW_NAME "SDL Template"
 const int FRAME_DELAY = 1000 / 60;
+const SDL_Color defaultColor = {2, 3, 2, 2};
+const SDL_Rect defaultRect = {0, 0, 0, 0};
 
-
-struct SDL {
+class SDL {
+public:
     int frameStart = 0;
     bool running = true;
-    SDL_Window* window;
-	SDL_Renderer* renderer;
+    SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
 	TTF_Font* font;
 	std::map<const char*, SDL_Texture*> textures;
 	const int defaultFontSize = 32;
-    static const SDL_Color defaultColor;
-    static const SDL_Rect defaultRect;
 
 
     SDL() {
-        if(SDL_Init(SDL_INIT_EVERYTHING) < 0) std::cout << "Error: SDL failed to initialize\nSDL Error: " << SDL_GetError() << "\n";
+        if(SDL_Init(SDL_INIT_EVERYTHING) < 0) std::cout << "Error: SDL failed to initialize\nSDL Error: " << SDL_GetError() << std::endl;
 
-        SDL_Window *window = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
-        if(!window) std::cout << "Error: Failed to open window\nSDL Error: " << SDL_GetError() << "\n";
-
-        SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-        if(!renderer) std::cout << "Error: Failed to create renderer\nSDL Error: " << SDL_GetError() << "\n";
+        window = SDL_CreateWindow(WINDOW_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+        if(!window) std::cout << "Error: Failed to open window\nSDL Error: " << SDL_GetError() << std::endl;
+        
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        if(!renderer) std::cout << "Error: Failed to create renderer\nSDL Error: " << SDL_GetError() << std::endl;
 
         SetDrawColor(255, 255, 255);
-
+        
         TTF_Init();
         SetFont("textures/Sans.ttf", defaultFontSize);
     }
@@ -61,11 +61,17 @@ struct SDL {
     }
 
 private:
+    //For your use
     inline void render() {
-        DrawLine(0, 0, 300, 300);
+        SDL_Rect rect;
+        rect.x = 100;
+        rect.y = 100;
+        rect.w = 100;
+        rect.h = 100;
+        DrawRectangle(&rect, {255, 0, 0, 0});
     }
     inline void input(SDL_Event *event) {
-
+        
     }
 
 
@@ -89,9 +95,11 @@ private:
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
 	void SetDrawColor(Uint8 r, Uint8 g, Uint8 b) {
-        Uint8 *a, *h, *j, *k;
+        Uint8 *a = new Uint8, *h = new Uint8, *j = new Uint8, *k = new Uint8;
         SDL_GetRenderDrawColor(renderer, h, j, k, a);
+        
         SDL_SetRenderDrawColor(renderer, r, g, b, *a);
+        delete a; delete h; delete j; delete k;
     }
     bool isDefaultColor(SDL_Color color) {
         return color.r == defaultColor.r && 
@@ -106,8 +114,8 @@ private:
             rect.h == defaultRect.h;
     }
 
-	void SetFont(const char* p_font, int size) {
-        font = TTF_OpenFont(p_font, size);
+	void SetFont(const char* filename, int size) {
+        font = TTF_OpenFont(filename, size);
     }
 	void SetFont(int size) {
         TTF_SetFontOutline(font, size);
@@ -115,7 +123,7 @@ private:
 
 	void Render(const char* path, SDL_Rect dst = defaultRect, SDL_Rect src = defaultRect, bool flip = false, SDL_Color color = defaultColor) {
         if (textures.count(path) == 0) textures[path] = LoadTexture(path);
-        Uint8 *r, *g, *b, *a;
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
         if (isDefaultColor(color)) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -125,30 +133,37 @@ private:
         if (flip) SDL_RenderCopyEx(renderer, textures[path], srcp, dstp, 0, NULL, SDL_FLIP_HORIZONTAL);
         else SDL_RenderCopy(renderer, textures[path], srcp, dstp);
         if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
 
 	void DrawRectangle(SDL_Rect* rect, SDL_Color color = defaultColor) {
-        Uint8* r, *g, *b, *a;
-        if (!isDefaultColor(color)) {
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
+        bool def = !isDefaultColor(color);
+        if (def) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         }
         SDL_RenderDrawRect(renderer, rect);
-        if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+
+        if (def) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
     void FillRectangle(SDL_Rect* rect, SDL_Color color = defaultColor) {
-        Uint8 *r, *g, *b, *a;
-        if (!isDefaultColor(color)) {
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
+        bool def = !isDefaultColor(color);
+        if (def) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         }
         SDL_RenderFillRect(renderer, rect);
-        if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        if (def) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
 
 	void DrawCircle(int p_x, int p_y, int32_t radius, SDL_Color color = defaultColor) {
-        Uint8 *r, *g, *b, *a;
-        if (!isDefaultColor(color)) {
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
+        bool def = !isDefaultColor(color);
+        if (def) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         }
@@ -181,11 +196,13 @@ private:
                 error += (tx - diameter);
             }
         }
-        if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        if (def) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
 	void FillCircle(int x, int y, int radius, SDL_Color color = defaultColor) {
-        Uint8 *r, *g, *b, *a;
-        if (!isDefaultColor(color)) {
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
+        bool def = !isDefaultColor(color);
+        if (def) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         }
@@ -222,32 +239,43 @@ private:
                 offsetx += 1;
             }
         }
-        if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        if (def) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
 
 	void DrawLine(int x1, int y1, int x2, int y2, SDL_Color color = defaultColor) {
-        Uint8 *r, *g, *b, *a;
-        if (!isDefaultColor(color)) {
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
+        bool def = !isDefaultColor(color);
+        if (def) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         }
         SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
-        if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        if (def) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
 	void DrawPoint(int x, int y, SDL_Color color = defaultColor) {
-        Uint8 *r, *g, *b, *a;
-        if (!isDefaultColor(color)) {
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
+        bool def = !isDefaultColor(color);
+        if (def) {
             SDL_GetRenderDrawColor(renderer, r, g, b, a);
             SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
         }
         SDL_RenderDrawPoint(renderer, x, y);
-        if (!isDefaultColor(color)) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        if (def) SDL_SetRenderDrawColor(renderer, *r, *g, *b, *a);
+        delete r; delete g; delete b; delete a;
     }
 
 	void DrawText(const char* text, SDL_Rect* rect, SDL_Color color = defaultColor) {
-        Uint8 *r, *g, *b, *a;
+        if (!isDefaultColor(color)) {
+            TTF_RenderText_Solid(font, text, color);
+            return;
+        }
+
+        Uint8 *r = new Uint8, *g = new Uint8, *b = new Uint8, *a = new Uint8;
         SDL_GetRenderDrawColor(renderer, r, g, b, a);
-        if (!isDefaultColor(color)) TTF_RenderText_Solid(font, text, color);
-        else TTF_RenderText_Solid(font, text, color);
+        SDL_Color current = {*r, *g, *b, *a};
+        TTF_RenderText_Solid(font, text, current);
+        delete r; delete g; delete b; delete a;
     }
 };
