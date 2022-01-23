@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <map>
+#include <functional>
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
@@ -15,15 +16,6 @@ const SDL_Rect defaultRect = {0, 0, 0, 0};
 
 class SDL {
 public:
-    int frameStart = 0;
-    bool running = true;
-    SDL_Window* window = NULL;
-	SDL_Renderer* renderer = NULL;
-	TTF_Font* font;
-	std::map<const char*, SDL_Texture*> textures;
-	const int defaultFontSize = 32;
-
-
     SDL() {
         if(SDL_Init(SDL_INIT_EVERYTHING) < 0) std::cout << "Error: SDL failed to initialize\nSDL Error: " << SDL_GetError() << std::endl;
 
@@ -33,7 +25,7 @@ public:
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
         if(!renderer) std::cout << "Error: Failed to create renderer\nSDL Error: " << SDL_GetError() << std::endl;
 
-        SetDrawColor(255, 255, 255);
+        SetDrawColor(0, 0, 0);
         
         TTF_Init();
         SetFont("textures/Sans.ttf", defaultFontSize);
@@ -47,11 +39,10 @@ public:
                 input(&event);
             }
 
-            SDL_RenderClear(renderer);
-            SetDrawColor(0, 0, 0);
-            
-            render();
+            update();
 
+            SDL_RenderClear(renderer);
+            render();
             SDL_RenderPresent(renderer);
             
             int frameTime = SDL_GetTicks() - frameStart;
@@ -60,38 +51,17 @@ public:
         }
     }
 
-private:
-    //For your use
-    inline void render() {
-        SDL_Rect rect;
-        rect.x = 100;
-        rect.y = 100;
-        rect.w = 100;
-        rect.h = 100;
-        DrawRectangle(&rect, {255, 0, 0, 0});
+    void setRender(std::function<void()> p_render) {
+        render = p_render;
     }
-    inline void input(SDL_Event *event) {
-        
+    void setInput(std::function<void(SDL_Event*)> p_input) {
+        input = p_input;
+    }
+    void setUpdate(std::function<void()> p_update) {
+        update = p_update;
     }
 
-
-    //The library
-    inline SDL_Texture* LoadTexture(const char* path) {
-        if (textures.count(path) == 0) textures[path] = LoadTexture(path);
-        return IMG_LoadTexture(renderer, path);
-    }
-
-    void Clear() {
-        SDL_RenderClear(renderer);
-    }
-	void Display() {
-        SDL_RenderPresent(renderer);
-    }
-	void Destroy() {
-        SDL_DestroyWindow(window);
-    }
-
-	void SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    void SetDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
 	void SetDrawColor(Uint8 r, Uint8 g, Uint8 b) {
@@ -277,5 +247,34 @@ private:
         SDL_Color current = {*r, *g, *b, *a};
         TTF_RenderText_Solid(font, text, current);
         delete r; delete g; delete b; delete a;
+    }
+
+private:
+    int frameStart = 0;
+    bool running = true;
+    SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
+	TTF_Font* font;
+	std::map<const char*, SDL_Texture*> textures;
+	const int defaultFontSize = 32;
+
+    std::function<void(SDL_Event*)> input;
+    std::function<void()> update;
+    std::function<void()> render;
+
+    //The library
+    inline SDL_Texture* LoadTexture(const char* path) {
+        if (textures.count(path) == 0) textures[path] = LoadTexture(path);
+        return IMG_LoadTexture(renderer, path);
+    }
+
+    void Clear() {
+        SDL_RenderClear(renderer);
+    }
+	void Display() {
+        SDL_RenderPresent(renderer);
+    }
+	void Destroy() {
+        SDL_DestroyWindow(window);
     }
 };
