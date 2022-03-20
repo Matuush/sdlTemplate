@@ -9,7 +9,7 @@ int main(int argc, char** argv){
     SDL_Rect rect{100, 100, 200, 200};
 
     interface.render = [&](){
-        interface.FillRectangle(&rect, {0, 255, 0, 0});
+        
     };
     interface.input = [&](SDL_Event* event){
 

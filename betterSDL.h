@@ -11,7 +11,7 @@
 #define SCREEN_HEIGHT 720
 #define WINDOW_NAME "SDL Template"
 const int FRAME_DELAY = 1000 / 60;
-SDL_Color current = {255U, 0U, 255U, 0U};
+SDL_Color current = {0U, 0U, 0U, 255U};
 
 struct SDL {
     int frameStart = 0, frameTime = 0;
